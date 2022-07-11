@@ -6,16 +6,8 @@ const GET_AREAS_OF_CONSERVATION = gql`
         id
         attributes {
           title
-
           short_description
-          country {
-            data {
-              id
-              attributes {
-                name
-              }
-            }
-          }
+          
         }
       }
     }

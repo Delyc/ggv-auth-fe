@@ -9,6 +9,16 @@ import { APPLY_VISA } from "../../mutations/applyVisa";
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
 import GetConservationAreas from "../GetConservationAreas";
+import { toast } from "react-toastify";
+
+
+
+import { loadStripe } from "@stripe/stripe-js";
+import { useRouter } from "next/router";
+
+// const fs = require("fs");
+
+loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
 const Apply = () => {
   function customTheme(theme) {
@@ -17,8 +27,8 @@ const Apply = () => {
       colors: {
         ...theme.colors,
         primary25: "orange",
-        primary: "green"
-      }
+        primary: "green",
+      },
     };
   }
   const [enteredFirstName, setEnteredFirstName] = useState("");
@@ -38,95 +48,92 @@ const Apply = () => {
   const onChangeExpiryDate = (e) => {
     setEnteredExpiryDate(e.target.value);
   };
-  const [enteredDestinationCountry, setEnteredDestinationCountry] =
-    useState("");
-  const onChangeDestinationCountry = (e) => {
-    setEnteredDestinationCountry(e.target.value);
-  };
-  const [enteredGgvFee, setEnteredGgvFee] = useState("");
-  const onChangeGgvFee = (e) => {
-    setEnteredGgvFee(e.target.value);
-  };
-  const [enteredConservationAreas, setEnteredConservationAreas] = useState("");
-  const onChangeConservationAreas = (e) => {
-    setEnteredConservationAreas(e.value);
-  };
+  const [enteredConservationAreas, setEnteredConservationAreas] = useState([]);
 
   const [user, setUser] = useState(null);
+
+  const router = useRouter();
+  const { success, canceled } = router.query;
 
   useEffect(() => {
     const auth = JSON.parse(localStorage.getItem("user") || "{}");
     setUser(auth);
+
+    if (success !== undefined || canceled !== undefined) {
+      if (success) {
+        alert("Payment Succesful! You will receive an email confirmation.");
+        // console.log("Order placed! You will receive an email confirmation.");
+      }
+
+      if (canceled) {
+        console.log(
+          "Order canceled -- continue to shop around and checkout when you’re ready."
+        );
+      }
+    }
+
+
   }, []);
 
-  // const [user, setUser] = useState(JSON.parse(localStorage.getItem("user") || "{}"));
-
-  const [createVisaHolder] = useMutation(APPLY_VISA, {
+  const [createVisaHolder, { loading }] = useMutation(APPLY_VISA, {
     variables: {
       first_name: enteredFirstName,
       last_name: enteredLastName,
-      user: parseInt(user?.login?.user.id),
-      conservationAreas: enteredConservationAreas,
+      user: parseInt(user?.id),
+      conservation_areas: enteredConservationAreas,
       passport_no: enteredPassportNo,
-      passport_expiry: enteredExpiryDate
-    }
+      passport_expiry: enteredExpiryDate,
+    },
   });
 
   const handleSelect = (e) => {
     // console.log(e)
     const choices = e.map((item) => parseInt(item.value));
     setEnteredConservationAreas(choices);
-    console.log(choices);
   };
 
   const {
     loading: areaLoading,
     error: areaError,
-    data
+    data,
   } = useQuery(GET_AREAS_OF_CONSERVATION);
 
-  if (areaError) return <p>Error :{areaError?.message}</p>;
+  if (areaError) {
+    console.log(areaError);
+    return <p>Error :{areaError?.message}</p>;
+  }
   const availableOptions = data?.conservationAreas?.data.map((area) => {
     return { value: area.id, label: area.attributes.title };
   });
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
+    
     e.preventDefault();
     if (
-      enteredFirstName === "" ||
-      enteredLastName === "" ||
+    
       enteredPassportNo === "" ||
-      enteredExpiryDate === ""
+      enteredExpiryDate === "" ||
+      enteredConservationAreas.length === 0
     ) {
       return alert("please .... fill all the fields");
     }
-    createVisaHolder(
-      enteredFirstName,
-      enteredLastName,
-      enteredPassportNo,
-      enteredExpiryDate,
-      enteredConservationAreas
-    );
-    console.log(
-      "submitted",
-      enteredFirstName,
-      enteredLastName,
-      enteredPassportNo,
-      enteredExpiryDate,
-      enteredConservationAreas
-    );
+    try {
+      await createVisaHolder();
+      toast.success("visa holder created succesfully");
+      setEnteredLastName("");
+      setEnteredFirstName("");
+      setEnteredPassportNo("");
+      setEnteredExpiryDate("");
+      setEnteredConservationAreas("");
 
-    // collecting the user Info for the backend
+      router.push('../../../pages/api/checkout_sessions');
 
-    setEnteredLastName("");
-    setEnteredFirstName("");
-
-    setEnteredPassportNo("");
-    setEnteredExpiryDate("");
-    setEnteredDestinationCountry("");
-    setEnteredGgvFee("");
-    setEnteredConservationAreas("");
+    } catch (error) {
+      toast(error.message);
+    }
   };
+
+  
 
   return (
     <div className="font-syne bg-[#d1be84] bg-cover grid grid-col-1 md:grid-cols-2 2xl:h-[100vh]">
@@ -152,37 +159,11 @@ const Apply = () => {
           Apply for Global Green Visa
         </h3>
         <form
-          onSubmit={onSubmit}
+        action="/api/checkout_sessions" method="POST"
+          // onSubmit={onSubmit}
           className="shadow-md rounded-lg px-7 pt-6 pb-8 m-5 border-gray border-2 "
         >
-          <div className="mb-4">
-            <label className="text-lg md:text-xl">
-              First name{" "}
-              <span className="text-sm">(As They appear on passport)</span>
-            </label>
-            <input
-              type="text"
-              name="first_name"
-              value={enteredFirstName}
-              onChange={(e) => onChangeFirstName(e)}
-              placeholder=""
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            />
-          </div>
-          <div className="mb-4">
-            <label className="text-lg md:text-xl">
-              Last name{" "}
-              <span className="text-sm">(As They appear on passport)</span>
-            </label>
-            <input
-              type="text"
-              name="last_name"
-              value={enteredLastName}
-              onChange={(e) => onChangeLastName(e)}
-              placeholder=""
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            />
-          </div>
+
 
           <div className="mb-4">
             <label className="text-lg md:text-xl">Passport Number</label>
@@ -223,15 +204,12 @@ const Apply = () => {
               isSearchable
               isMulti
               autoFocus
-            >
-              {/* <option value="" hidden>Select conservation area</option>
-              {areas?.conservationAreas?.data.map((area) => (<option key={area.id} value={area.id}>{area.attributes.title}</option>))} */}
-            </Select>
+            ></Select>
           </div>
 
           <div className="mt-5 ml-[8vh]">
             <button className="shadow focus:shadow-outline focus:outline-none text-white font-bold py-2 px-6 md:text-xl bg-[#418d89] rounded-sm mt-8 mb-3 py-1">
-              Proceed to payment
+              {loading ? "Sending..." : "Proceed to payment"}
             </button>
           </div>
         </form>
