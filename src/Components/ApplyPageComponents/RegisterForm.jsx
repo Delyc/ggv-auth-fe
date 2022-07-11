@@ -64,20 +64,19 @@ const JoinUs = () => {
     try {
       const { data } = await signup(username, password, email);
       localStorage.setItem(AUTH_TOKEN, data.register.jwt);
-    localStorage.setItem(USER, JSON.stringify(data.register.user));
-    console.log(data)
-    console.log(data.register.user?.id)
-    console.log(data.register.user?.email)
+      localStorage.setItem(USER, JSON.stringify(data.register.user));
+      console.log(data)
+      console.log(data.register.user?.id)
+      console.log(data.register.user?.email)
       console.log("dataa", data)
       setID(data.register.user.id)
       try {
         const profile = await addDetails({
           variables: {
             data: {
-
               first_name: enteredFirstName,
               last_name: enteredLastName,
-              user: data.register.user.id
+              user: userID
             }
           }
         })
@@ -92,6 +91,8 @@ const JoinUs = () => {
       } catch (error) {
         
         toast.error(error.message)
+
+        console.log('error', error)
     }
 
 
