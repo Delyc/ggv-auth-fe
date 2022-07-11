@@ -2,13 +2,10 @@ import styles from "../../../styles/Home.module.css";
 import Head from "next/head";
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { AUTH_TOKEN } from "../constant";
 import { useQuery, gql, useMutation } from "@apollo/client";
 import { GET_AREAS_OF_CONSERVATION } from "../../Queries/conservationAreas";
 import { APPLY_VISA } from "../../mutations/applyVisa";
 import Select from "react-select";
-import makeAnimated from "react-select/animated";
-import GetConservationAreas from "../GetConservationAreas";
 import { toast } from "react-toastify";
 
 
@@ -75,16 +72,16 @@ const Apply = () => {
 
   }, []);
 
-  const [createVisaHolder, { loading }] = useMutation(APPLY_VISA, {
-    variables: {
-      first_name: enteredFirstName,
-      last_name: enteredLastName,
-      user: parseInt(user?.id),
-      conservation_areas: enteredConservationAreas,
-      passport_no: enteredPassportNo,
-      passport_expiry: enteredExpiryDate,
-    },
-  });
+  // const [createVisaHolder, { loading }] = useMutation(APPLY_VISA, {
+  //   variables: {
+  //     first_name: enteredFirstName,
+  //     last_name: enteredLastName,
+  //     user: parseInt(user?.id),
+  //     conservation_areas: enteredConservationAreas,
+  //     passport_no: enteredPassportNo,
+  //     passport_expiry: enteredExpiryDate,
+  //   },
+  // });
 
   const handleSelect = (e) => {
     // console.log(e)
@@ -106,32 +103,32 @@ const Apply = () => {
     return { value: area.id, label: area.attributes.title };
   });
 
-  const onSubmit = async (e) => {
+  // const onSubmit = async (e) => {
     
-    e.preventDefault();
-    if (
+  //   e.preventDefault();
+  //   if (
     
-      enteredPassportNo === "" ||
-      enteredExpiryDate === "" ||
-      enteredConservationAreas.length === 0
-    ) {
-      return alert("please .... fill all the fields");
-    }
-    try {
-      await createVisaHolder();
-      toast.success("visa holder created succesfully");
-      setEnteredLastName("");
-      setEnteredFirstName("");
-      setEnteredPassportNo("");
-      setEnteredExpiryDate("");
-      setEnteredConservationAreas("");
+  //     enteredPassportNo === "" ||
+  //     enteredExpiryDate === "" ||
+  //     enteredConservationAreas.length === 0
+  //   ) {
+  //     return alert("please .... fill all the fields");
+  //   }
+  //   try {
+  //     await createVisaHolder();
+  //     toast.success("visa holder created succesfully");
+  //     setEnteredLastName("");
+  //     setEnteredFirstName("");
+  //     setEnteredPassportNo("");
+  //     setEnteredExpiryDate("");
+  //     setEnteredConservationAreas("");
 
-      router.push('../../../pages/api/checkout_sessions');
+  //     router.push('../../../pages/api/checkout_sessions');
 
-    } catch (error) {
-      toast(error.message);
-    }
-  };
+  //   } catch (error) {
+  //     toast(error.message);
+  //   }
+  // };
 
   
 
@@ -187,6 +184,12 @@ const Apply = () => {
               placeholder=""
             />
           </div>
+
+          <input
+              type="hidden"
+              name="user_id"
+              value={user}
+          />
 
           <div>
             <label className="text-lg md:text-xl">
