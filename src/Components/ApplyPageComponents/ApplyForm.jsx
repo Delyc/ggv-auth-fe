@@ -72,16 +72,16 @@ const Apply = () => {
 
   }, []);
 
-  // const [createVisaHolder, { loading }] = useMutation(APPLY_VISA, {
-  //   variables: {
-  //     first_name: enteredFirstName,
-  //     last_name: enteredLastName,
-  //     user: parseInt(user?.id),
-  //     conservation_areas: enteredConservationAreas,
-  //     passport_no: enteredPassportNo,
-  //     passport_expiry: enteredExpiryDate,
-  //   },
-  // });
+  const [createVisaHolder, { loading }] = useMutation(APPLY_VISA, {
+    variables: {
+      first_name: enteredFirstName,
+      last_name: enteredLastName,
+      user: parseInt(user?.id),
+      conservation_areas: enteredConservationAreas,
+      passport_no: enteredPassportNo,
+      passport_expiry: enteredExpiryDate,
+    },
+  });
 
   const handleSelect = (e) => {
     // console.log(e)
