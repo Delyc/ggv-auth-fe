@@ -1,12 +1,4 @@
-import { data } from 'autoprefixer';
-import { APPLY_VISA } from "../../src/mutations/applyVisa";
-import { useMutation } from "@apollo/client";
-
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-import fetcher from '../../lib/api';
-
-
-
 
 async function Handler(req, res) {
   // console.log(req.body.user_id);
@@ -22,50 +14,15 @@ async function Handler(req, res) {
   //   },
   // });
 
-
   // await fetcher(`${process.env.NEXT_PUBLIC_STRAPI_URL}/visas/${payment_id}`)
   //   .then( (response) => qr_code = response.data.attributes.qr_image);
   // console.log("qrcode", qr_code);
 
   if (req.method === "POST") {
-
-    // Create visa holder 
+    // Create visa holder
     // await createVisaHolder();
 
     // toast.success("visa holder created succesfully")
-    try{
-      // Create Checkout Sessions from body params.
-      const session = await stripe.checkout.sessions.create({
-        line_items: [
-          {
-            // Provide the exact Price ID (for example, pr_1234) of the product you want to sell
-            price: "price_1LG6qaFQPGmzrn5tDKjmnos3",
-            quantity: 1,
-          },
-        ],
-        mode: "payment",
-
-        success_url: `${req.headers.origin}/api/email/`,
-        cancel_url: `${req.headers.origin}/payments/?canceled=true`,
-      });
-      res.redirect(303, session.url);
-    } catch (err) {
-      res.status(err.statusCode || 500).json(err.message);
-    }
-  } else {
-    res.setHeader("Allow", "POST");
-    res.status(405).end("Method Not Allowed");
-  }
-
-}
-
-
-
-export default Handler;
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-
-export default async function handler(req, res) {
-  if (req.method === "POST") {
     try {
       // Create Checkout Sessions from body params.
       const session = await stripe.checkout.sessions.create({
@@ -90,3 +47,4 @@ export default async function handler(req, res) {
     res.status(405).end("Method Not Allowed");
   }
 }
+export default Handler;
